@@ -32,7 +32,14 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Archive WAR') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.war',
+                                 fingerprint: true
+            }
+        }
+
+        stage('Deploy to Tomcat') {
             steps {
                 sh '''
                     rm -rf /opt/tomcat/webapps/AayushDevOpsApp
@@ -41,15 +48,21 @@ pipeline {
                 '''
             }
         }
+
+        stage('Verify Deployment') {
+            steps {
+                sh 'curl --fail http://localhost:8081/AayushDevOpsApp/'
+            }
+        }
     }
 
     post {
         success {
-            echo 'Build, Test, Package and Deployment completed successfully.'
+            echo 'Pipeline completed successfully. Application is deployed and verified.'
         }
 
         failure {
-            echo 'Pipeline execution failed.'
+            echo 'Pipeline execution failed. Check the stage logs.'
         }
     }
 }
