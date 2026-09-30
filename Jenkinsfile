@@ -44,34 +44,36 @@ pipeline {
                 sh '''
                     rm -rf /opt/tomcat/webapps/AayushDevOpsApp
                     rm -f /opt/tomcat/webapps/AayushDevOpsApp.war
+
                     cp target/AayushDevOpsApp.war /opt/tomcat/webapps/
+
+                    echo "WAR copied to Tomcat."
                 '''
             }
         }
 
         stage('Verify Deployment') {
-    steps {
-        sh '''
-            for i in {1..10}; do
-                if curl --fail http://localhost:8081/AayushDevOpsApp/; then
-                    echo "Application deployed successfully."
-                    exit 0
-                fi
+            steps {
+                sh '''
+                    echo "Waiting for Tomcat to deploy the WAR..."
+                    sleep 5
 
-                echo "Application not ready yet. Retrying..."
-                sleep 2
-            done
+                    echo "Checking application URL..."
 
-            echo "Application deployment verification failed."
-            exit 1
-        '''
-    }
-}
+                    curl --fail --silent --show-error \
+                        http://localhost:8081/AayushDevOpsApp/ \
+                        > /dev/null
+
+                    echo "Application deployed and verified successfully."
+                '''
+            }
+        }
     }
 
     post {
+
         success {
-            echo 'Pipeline completed successfully. Application is deployed and verified.'
+            echo 'Build, Test, Package, Archive, Deployment and Verification completed successfully.'
         }
 
         failure {
