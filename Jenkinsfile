@@ -55,16 +55,24 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
-                    echo "Waiting for Tomcat to deploy the WAR..."
-                    sleep 5
+                    echo "Waiting for Tomcat deployment..."
 
-                    echo "Checking application URL..."
+                    for i in $(seq 1 20)
+                    do
+                        echo "Verification attempt $i/20"
 
-                    curl --fail --silent --show-error \
-                        http://localhost:8081/AayushDevOpsApp/ \
-                        > /dev/null
+                        if curl --fail --silent \
+                            http://localhost:8081/AayushDevOpsApp/ > /dev/null
+                        then
+                            echo "Application deployed and verified successfully."
+                            exit 0
+                        fi
 
-                    echo "Application deployed and verified successfully."
+                        sleep 2
+                    done
+
+                    echo "Application deployment verification failed after 40 seconds."
+                    exit 1
                 '''
             }
         }
