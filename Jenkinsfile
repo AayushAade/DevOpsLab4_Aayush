@@ -50,10 +50,23 @@ pipeline {
         }
 
         stage('Verify Deployment') {
-            steps {
-                sh 'curl --fail http://localhost:8081/AayushDevOpsApp/'
-            }
-        }
+    steps {
+        sh '''
+            for i in {1..10}; do
+                if curl --fail http://localhost:8081/AayushDevOpsApp/; then
+                    echo "Application deployed successfully."
+                    exit 0
+                fi
+
+                echo "Application not ready yet. Retrying..."
+                sleep 2
+            done
+
+            echo "Application deployment verification failed."
+            exit 1
+        '''
+    }
+}
     }
 
     post {
